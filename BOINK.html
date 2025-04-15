@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Igor</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: grey;
+        }
+        canvas {
+            background-color: #000;
+        }
+        .game-over {
+            position: absolute;
+            font-size: 50px;
+            color: red;
+            font-weight: bold;
+        }
+        .score {
+            position: absolute;
+            font-size: 30px;
+            color: cyan;
+            font-weight: bold;
+            top: 20px;
+            left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="gameOverText" class="game-over" style="display: none;">Koniec</div>
+    <div id="scoreText" class="score">zbite: 0</div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const gameOverText = document.getElementById("gameOverText");
+        const scoreText = document.getElementById("scoreText");
+
+        let ballX = 400, ballY = 300, ballRadius = 10, ballSpeedX = 5, ballSpeedY = -5;
+        let paddleWidth = 105, paddleHeight = 10, paddleX = 350;
+        let obstacles = [];
+        let numObstaclesPerRow = 16;
+        let numRows = 10;
+        let obstacleWidth = 50, obstacleHeight = 10;
+
+        let rightPressed = false, leftPressed = false;
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+
+        let gameOver = false;
+        let obstaclesDestroyed = 0;
+
+        function initObstacles() {
+            for (let row = 0; row < numRows; row++) {
+                for (let i = 0; i < numObstaclesPerRow; i++) {
+                    let x = i * (obstacleWidth + 5); 
+                    let y = row * (obstacleHeight + 5) + 50;
+                    obstacles.push({ x, y });
+                }
+            }
+        }
+
+        function keyDownHandler(e) {
+            if (e.key == "Right" || e.key == "ArrowRight") {
+                rightPressed = true;
+            } else if (e.key == "Left" || e.key == "ArrowLeft") {
+                leftPressed = true;
+            }
+        }
+
+        function keyUpHandler(e) {
+            if (e.key == "Right" || e.key == "ArrowRight") {
+                rightPressed = false;
+            } else if (e.key == "Left" || e.key == "ArrowLeft") {
+                leftPressed = false;
+            }
+        }
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawObstacles() {
+            obstacles.forEach(obstacle => {
+                ctx.beginPath();
+                ctx.rect(obstacle.x, obstacle.y, obstacleWidth, obstacleHeight);
+                ctx.fillStyle = "#FF5733";
+                ctx.fill();
+                ctx.closePath();
+            });
+        }
+
+        function drawGameOver() {
+            gameOverText.style.display = "block";
+        }
+
+        function updateScore() {
+            scoreText.textContent = "zbite: " + obstaclesDestroyed;
+        }
+
+        function draw() {
+            if (gameOver) {
+                drawGameOver();
+                return;
+            }
+			
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBall();
+            drawPaddle();
+            drawObstacles();
+
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            if (ballX + ballRadius > canvas.width || ballX - ballRadius < 0) {
+                ballSpeedX = -ballSpeedX;
+            }
+            if (ballY - ballRadius < 0) {
+                ballSpeedY = -ballSpeedY;
+            }
+            if (ballY + ballRadius > canvas.height - paddleHeight) {
+                if (ballX > paddleX && ballX < paddleX + paddleWidth) {
+                    ballSpeedY = -ballSpeedY;
+                } else {
+                    gameOver = true;
+                }
+            }
+
+            obstacles.forEach((obstacle, index) => {
+                if (ballX > obstacle.x && ballX < obstacle.x + obstacleWidth && ballY - ballRadius < obstacle.y + obstacleHeight) {
+                    ballSpeedY = -ballSpeedY;
+                    obstacles.splice(index, 1);
+                    obstaclesDestroyed++;
+                    updateScore(); 
+                }
+            });
+
+            if (rightPressed && paddleX < canvas.width - paddleWidth) {
+                paddleX += 10;
+            } else if (leftPressed && paddleX > 0) {
+                paddleX -= 10;
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        initObstacles();
+        draw();
+    </script>
+</body>
+</html>
