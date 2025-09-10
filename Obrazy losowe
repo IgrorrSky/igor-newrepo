@@ -41,7 +41,7 @@
 </head>
 <body>
 
-  <h1>Obrazy Igor</h1>
+  <h1>obrazy Igor</h1>
 
   <div id="image-container">
     <img id="main-image" src="">
