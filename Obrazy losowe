@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Losowe Obrazy</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #image-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #main-image {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      transition: transform 5s ease;
+    }
+
+    .zoom-in {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="image-container">
+    <img id="main-image" src="" alt="Losowy obraz">
+  </div>
+
+  <script>
+    const imageElement = document.getElementById('main-image');
+
+    function loadRandomImage() {
+      const imageUrl = `https://source.unsplash.com/random/${window.innerWidth}x${window.innerHeight}?sig=${Math.random()}`;
+
+      imageElement.classList.remove('zoom-in');
+
+      const img = new Image();
+      img.src = imageUrl;
+
+      img.onload = () => {
+        imageElement.src = imageUrl;
+
+        void imageElement.offsetWidth; // Hack żeby animacja działała za każdym razem
+
+        imageElement.classList.add('zoom-in');
+      };
+    }
+
+    loadRandomImage();
+
+    setInterval(loadRandomImage, 5000);
+  </script>
+</body>
+</html>
